@@ -21,7 +21,7 @@ async function sendMessage() {
     // ===============================
     // Kirim ke server
     // ===============================
-    const response = await fetch("/chat", {
+    const response = await fetch("https://api-puskesmas.vercel.app/chat", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
