@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chatbot Puskesmas Beji</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="chat-wrapper">
+  <div class="chat-card">
+
+    <!-- Header -->
+    <div class="chat-header">
+      <img src="pngegg.png" alt="Bot Puskesmas Beji">
+      <div>
+        <h4>Layanan Informasi</h4>
+        <span>Puskesmas Beji</span>
+      </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-body" id="chatBox">
+
+      <!-- Bot Greeting -->
+      <div class="message bot">
+        <div class="bot-text">
+          <p>Halo 👋</p>
+          <p>
+            Saya asisten <strong>Puskesmas Beji</strong>.<br>
+            Silakan pilih menu berikut dengan contoh mengetik <strong>"1"</strong>.
+          </p>
+        </div>
+
+        <div class="bot-menu">
+          <ol>
+            <li>Jadwal Pelayanan</li>
+            <li>Cara Pendaftaran</li>
+            <li>Jadwal Imunisasi</li>
+            <li>Layanan Pengaduan</li>
+            <li>Jadwal ANCT</li>
+            <li>Alamat</li>
+            <li>Kontak</li>
+          </ol>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input">
+      <input 
+        type="text" 
+        id="userInput" 
+        placeholder="Ketik pesan..." 
+        autocomplete="off"
+      />
+      <button onclick="sendMessage()">➤</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="chat.js"></script>
+</body>
+</html>
