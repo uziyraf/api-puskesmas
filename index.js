@@ -13,7 +13,6 @@ app.use(cors());
 ====================== */
 app.use(bodyParser.json());
 
-// ⬇️ INI YANG KAMU TANYAKAN (WAJIB DI SINI)
 app.use(express.static("public"));
 
 /* ======================
@@ -80,10 +79,3 @@ if (process.env.VERCEL) {
     console.log(`🚀 Server jalan di port ${port}`);
   });
 }
-//   // buka otomatis di Chrome
-//   open("http://localhost:2000", {
-//     app: {
-//       name: "chrome"
-//     }
-//   });
-// });

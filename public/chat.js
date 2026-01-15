@@ -1,55 +1,25 @@
 async function sendMessage() {
-  const input = document.getElementById("userInput");
-  const chatBox = document.getElementById("chatBox");
-  const message = input.value.trim();
+    const input = document.getElementById("userInput");
+    const chatBox = document.getElementById("chatBox");
+    const message = input.value.trim();
+    if (!message) return;
 
-  if (!message) return;
+    chatBox.innerHTML += `<div class="message user">${message}</div>`;
+    input.value = "";
 
-  // ===============================
-  // Bubble USER
-  // ===============================
-  chatBox.innerHTML += `
-    <div class="message user">
-      ${message}
-    </div>
-  `;
+    try {
+        const res = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message })
+        });
 
-  input.value = "";
-  chatBox.scrollTop = chatBox.scrollHeight;
+        if (!res.ok) throw new Error("Server error");
 
-  try {
-    // ===============================
-    // Kirim ke server
-    // ===============================
-    const response = await fetch("https://api-puskesmas.vercel.app/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ message })
-    });
+        const data = await res.json();
 
-    const data = await response.json();
-
-    // ===============================
-    // Bubble BOT
-    // ===============================
-    chatBox.innerHTML += `
-      <div class="message bot">
-        ${data.reply}
-      </div>
-    `;
-
-  } catch (error) {
-    // ===============================
-    // Error handling (server down)
-    // ===============================
-    chatBox.innerHTML += `
-      <div class="message bot">
-        Terjadi kesalahan server
-      </div>
-    `;
-  }
-
-  chatBox.scrollTop = chatBox.scrollHeight;
+        chatBox.innerHTML += `<div class="message bot">${data.reply}</div>`;
+    } catch {
+        chatBox.innerHTML += `<div class="message bot">Server bermasalah</div>`;
+    }
 }
