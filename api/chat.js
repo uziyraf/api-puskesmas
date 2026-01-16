@@ -1,39 +1,39 @@
-// const dialogflow = require("@google-cloud/dialogflow");
-// const { v4: uuidv4 } = require("uuid");
+require('dotenv').config();
+const dialogflow = require('@google-cloud/dialogflow');
 
-// const sessionClient = new dialogflow.SessionsClient({
-//   credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS)
-// });
+const projectId = process.env.PROJECT_ID;
 
-// module.exports = async (req, res) => {
-//   if (req.method !== "POST") {
-//     return res.status(405).json({ error: "Method not allowed" });
-//   }
+const sessionClient = new dialogflow.SessionsClient();
 
-//   const { message } = req.body;
-//   try {
-//     const response = await fetch("/chat", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json"
-//       },
-//       body: JSON.stringify({ message })
-//     });
+module.exports = async (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
-//     const data = await response.json();
+  try {
+    const { message, sessionId = 'default-session' } = req.body;
 
-//     chatBox.innerHTML += `
-//     <div class="message bot">
-//       ${data.reply}
-//     </div>
-//   `;
+    const sessionPath =
+      sessionClient.projectAgentSessionPath(projectId, sessionId);
 
-//   } catch (error) {
-//     chatBox.innerHTML += `
-//     <div class="message bot">
-//       Terjadi kesalahan server
-//     </div>
-//   `;
-//   }
+    const request = {
+      session: sessionPath,
+      queryInput: {
+        text: {
+          text: message,
+          languageCode: 'id',
+        },
+      },
+    };
 
-// };
+    const responses = await sessionClient.detectIntent(request);
+    const result = responses[0].queryResult;
+
+    res.status(200).json({
+      reply: result.fulfillmentText,
+    });
+  } catch (error) {
+    console.error('Dialogflow error:', error);
+    res.status(500).json({ error: 'Dialogflow error' });
+  }
+};

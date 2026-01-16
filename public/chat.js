@@ -1,26 +1,12 @@
-async function sendMessage() {
-    const input = document.getElementById("userInput");
-    const chatBox = document.getElementById("chatBox");
-    const message = input.value.trim();
+const API_URL = 'https://api-puskesmas.vercel.app/api/chat';
 
-    if (!message) return;
+async function sendMessage(text) {
+    const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+    });
 
-    chatBox.innerHTML += `<div class="message user">${message}</div>`;
-    input.value = "";
-
-    try {
-        const response = await fetch("/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message }),
-        });
-
-        const data = await response.json();
-
-        chatBox.innerHTML += `<div class="message bot">${data.reply}</div>`;
-    } catch (err) {
-        chatBox.innerHTML += `<div class="message bot">⚠️ Server bermasalah</div>`;
-    }
-
-    chatBox.scrollTop = chatBox.scrollHeight;
+    const data = await res.json();
+    return data.reply;
 }
