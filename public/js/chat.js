@@ -5,8 +5,21 @@ async function sendMessage() {
 
     if (!message) return;
 
-    chatBox.innerHTML += `<div class="user">${message}</div>`;
+    // Escape HTML untuk keamanan
+    const escapeHtml = (text) => {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    };
+
+    chatBox.innerHTML += `
+        <div class="message user">
+            <div class="user-text">${escapeHtml(message)}</div>
+        </div>
+    `;
+
     input.value = "";
+    chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
         const res = await fetch("/api/chat", {
@@ -20,9 +33,21 @@ async function sendMessage() {
         }
 
         const data = await res.json();
-        chatBox.innerHTML += `<div class="bot">${data.reply}</div>`;
+
+        chatBox.innerHTML += `
+            <div class="message bot">
+                <div class="bot-text">${escapeHtml(data.reply)}</div>
+            </div>
+        `;
+
     } catch (error) {
         console.error("Error:", error);
-        chatBox.innerHTML += `<div class="bot">⚠️ Terjadi kesalahan koneksi</div>`;
+        chatBox.innerHTML += `
+            <div class="message bot">
+                <div class="bot-text">⚠️ Terjadi kesalahan koneksi</div>
+            </div>
+        `;
     }
+
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
