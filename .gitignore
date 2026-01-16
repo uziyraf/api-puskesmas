@@ -1,8 +1,8 @@
 # Environment variables
 .env
 
-# Google service account key
-*.json
+# Google service account key (spesifik)
+pkm-beji-key.json
 
 # Node dependencies
 node_modules/

@@ -11,25 +11,29 @@ module.exports = async (req, res) => {
   }
 
   const { message } = req.body;
-
   try {
-    const sessionPath = sessionClient.projectAgentSessionPath(
-      process.env.PROJECT_ID,
-      uuidv4()
-    );
+    const response = await fetch("/chat", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ message })
+    });
 
-    const request = {
-      session: sessionPath,
-      queryInput: {
-        text: { text: message, languageCode: "id" }
-      }
-    };
+    const data = await response.json();
 
-    const responses = await sessionClient.detectIntent(request);
-    const result = responses[0].queryResult;
+    chatBox.innerHTML += `
+    <div class="message bot">
+      ${data.reply}
+    </div>
+  `;
 
-    res.status(200).json({ reply: result.fulfillmentText });
-  } catch (err) {
-    res.status(500).json({ reply: "Terjadi kesalahan server" });
+  } catch (error) {
+    chatBox.innerHTML += `
+    <div class="message bot">
+      Terjadi kesalahan server
+    </div>
+  `;
   }
+
 };

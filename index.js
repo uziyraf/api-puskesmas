@@ -1,64 +1,82 @@
+require("dotenv").config();
+
 const express = require("express");
 const bodyParser = require("body-parser");
-const dialogflow = require("@google-cloud/dialogflow");
-const { v4: uuidv4 } = require("uuid");
-const open = require("open");
 const cors = require("cors");
+const { v4: uuidv4 } = require("uuid");
+const dialogflow = require("@google-cloud/dialogflow");
 
 const app = express();
 
 app.use(cors());
-/* ======================
-   MIDDLEWARE
-====================== */
 app.use(bodyParser.json());
-
 app.use(express.static("public"));
 
 /* ======================
-   DIALOGFLOW CONFIG
+   ENV VALIDATION
 ====================== */
-require('dotenv').config();
-
-const sessionClient = new dialogflow.SessionsClient({
-  credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS)
-});
 
 const projectId = process.env.PROJECT_ID;
-module.exports = { sessionClient, projectId };
+
+if (!projectId) {
+  console.error("❌ ERROR: PROJECT_ID tidak ditemukan di .env");
+  process.exit(1);
+}
+
+console.log("✅ PROJECT_ID:", projectId);
 
 /* ======================
-   API CHATBOT
+   DIALOGFLOW CLIENT
 ====================== */
+
+const sessionClient = new dialogflow.SessionsClient({
+  credentials: process.env.GOOGLE_CREDENTIALS
+    ? JSON.parse(process.env.GOOGLE_CREDENTIALS)
+    : undefined,
+});
+
+
+/* ======================
+   CHAT API
+====================== */
+
 app.post("/chat", async (req, res) => {
-  const message = req.body.message;
+  const { message } = req.body;
+
+  if (!message) {
+    return res.json({ reply: "Pesan kosong" });
+  }
+
   const sessionId = uuidv4();
 
-  const sessionPath = sessionClient.projectAgentSessionPath(
-    projectId,
-    sessionId
-  );
-
-  const request = {
-    session: sessionPath,
-    queryInput: {
-      text: {
-        text: message,
-        languageCode: "id",
-      },
-    },
-  };
-
   try {
+    const sessionPath = sessionClient.projectAgentSessionPath(
+      projectId,
+      sessionId
+    );
+
+    const request = {
+      session: sessionPath,
+      queryInput: {
+        text: {
+          text: message,
+          languageCode: "id",
+        },
+      },
+    };
+
     const responses = await sessionClient.detectIntent(request);
     const result = responses[0].queryResult;
 
     res.json({
-      reply: result.fulfillmentText,
+      reply: result.fulfillmentText || "Maaf, saya belum memahami pertanyaan Anda.",
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ reply: "Terjadi kesalahan server" });
+
+  } catch (error) {
+    console.error("Dialogflow error:", error);
+    res.status(500).json({
+      reply: "⚠️ Terjadi kesalahan pada chatbot",
+    });
   }
 });
 
@@ -66,16 +84,12 @@ app.post("/chat", async (req, res) => {
    SERVER
 ====================== */
 
+const port = process.env.PORT || 3000;
 
-const port = process.env.PORT || 3000; // <-- GANTI INI
-
-// Cek apakah sedang berjalan di Vercel?
-if (process.env.VERCEL) {
-  // Kalau di Vercel, export app-nya (jangan di-listen)
-  module.exports = app;
-} else {
-  // Kalau di laptop (lokal), jalankan listen seperti biasa
+if (!process.env.VERCEL) {
   app.listen(port, () => {
-    console.log(`🚀 Server jalan di port ${port}`);
+    console.log(`🚀 Server jalan di http://localhost:${port}`);
   });
 }
+
+module.exports = app;
