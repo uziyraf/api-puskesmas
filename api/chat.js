@@ -1,27 +1,32 @@
-require('dotenv').config();
-const dialogflow = require('@google-cloud/dialogflow');
+import dialogflow from "@google-cloud/dialogflow";
+import { v4 as uuidv4 } from "uuid";
 
-const projectId = process.env.PROJECT_ID;
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method Not Allowed" });
+  }
 
-const sessionClient = new dialogflow.SessionsClient();
-
-module.exports = async (req, res) => {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  const { message } = req.body;
+  if (!message) {
+    return res.json({ reply: "Pesan kosong" });
   }
 
   try {
-    const { message, sessionId = 'default-session' } = req.body;
+    const projectId = process.env.PROJECT_ID;
+    const sessionClient = new dialogflow.SessionsClient();
 
-    const sessionPath =
-      sessionClient.projectAgentSessionPath(projectId, sessionId);
+    const sessionId = uuidv4();
+    const sessionPath = sessionClient.projectAgentSessionPath(
+      projectId,
+      sessionId
+    );
 
     const request = {
       session: sessionPath,
       queryInput: {
         text: {
           text: message,
-          languageCode: 'id',
+          languageCode: "id",
         },
       },
     };
@@ -29,11 +34,13 @@ module.exports = async (req, res) => {
     const responses = await sessionClient.detectIntent(request);
     const result = responses[0].queryResult;
 
-    res.status(200).json({
-      reply: result.fulfillmentText,
+    res.json({
+      reply:
+        result.fulfillmentText ||
+        "Maaf, saya belum memahami pertanyaan Anda.",
     });
-  } catch (error) {
-    console.error('Dialogflow error:', error);
-    res.status(500).json({ error: 'Dialogflow error' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ reply: "Dialogflow error" });
   }
-};
+}
