@@ -2,21 +2,14 @@
     "version": 2,
     "builds": [
         {
-            "src": "index.js",
+            "src": "api/**/*.js",
             "use": "@vercel/node"
         }
     ],
     "routes": [
         {
-            "src": "/chat",
-            "methods": [
-                "POST"
-            ],
-            "dest": "/index.js"
-        },
-        {
-            "src": "/(.*)",
-            "dest": "/index.js"
+            "src": "/api/(.*)",
+            "dest": "/api/$1"
         }
     ]
 }
